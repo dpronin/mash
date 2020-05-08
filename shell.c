@@ -44,7 +44,7 @@ typedef struct job_s
 {
     job_id_t id;
     pid_t    pid;
-    char     *cmd;
+    char     cmd[MAXLINE];
 } job_t;
 // foreground job is just a job, no other properties unlike to a background job
 typedef job_t fg_job_t;
@@ -234,15 +234,6 @@ static void remove_bg_job_node(bg_job_node_t *node)
     free(node);
 }
 
-// the function that duplicates the string
-static char* sdup(char const *str)
-{
-    char *dup = (char*)malloc(strlen(str) + 1);
-    if (dup)
-        strcpy(dup, str);
-    return dup;
-}
-
 // the handler that receives SIGINT and SIGTSTP in the shell
 static void sig_int_stop_handler(int sig)
 {
@@ -270,7 +261,6 @@ static void sig_child_handler(int sig)
         if (child_pid == g_fg_job.pid)
         {
             log_job_fg_term(g_fg_job.pid, g_fg_job.cmd);
-            free(g_fg_job.cmd);
             memset(&g_fg_job, 0, sizeof(g_fg_job));
         }
         // if the background job has terminated find the job by PID in the list of background jobs,
@@ -281,7 +271,6 @@ static void sig_child_handler(int sig)
             if (node)
             {
                 log_job_bg_term(node->job.job.pid, node->job.job.cmd);
-                free(node->job.job.cmd);
                 remove_bg_job_node(node);
             }
         }
@@ -293,7 +282,6 @@ static void sig_child_handler(int sig)
         if (child_pid == g_fg_job.pid)
         {
             log_job_fg_term_sig(g_fg_job.pid, g_fg_job.cmd);
-            free(g_fg_job.cmd);
             memset(&g_fg_job, 0, sizeof(g_fg_job));
         }
         // if the background has been terminated then find it by PID in the list,
@@ -305,7 +293,6 @@ static void sig_child_handler(int sig)
             if (node)
             {
                 log_job_bg_term_sig(node->job.job.pid, node->job.job.cmd);
-                free(node->job.job.cmd);
                 remove_bg_job_node(node);
             }
         }
@@ -524,7 +511,8 @@ int main(void)
         /* Parse command line */
         cmdline[strlen(cmdline) - 1] = '\0';  // remove trailing '\n'
         // duplicate the cmdline received from the shell to afterwards store it in a job
-        char *cmd = sdup(cmdline);
+        char cmd[MAXLINE];
+        strcpy(cmd, cmdline);
         // parse a command line received from the shell
         parse(cmdline, argv, &aux);
 
@@ -593,12 +581,12 @@ int main(void)
                     size_t const path_len = strlen(*path);
                     size_t const argv0_len = strlen(argv[0]);
                     size_t const size = path_len + argv0_len + 1;
-                    char *pathname = malloc(size);
+                    assert(size <= MAXLINE);
+                    char pathname[MAXLINE];
                     strncpy(pathname, *path, path_len);
                     strncpy(&pathname[path_len], argv[0], argv0_len);
                     pathname[size - 1] = '\0';
                     execv(pathname, argv);
-                    free(pathname);
                 }
             }
             // if the path is absolute
@@ -622,7 +610,7 @@ int main(void)
             // store the process ID the job belongs to
             job.pid = pid;
             // store the command line that the job was launched with
-            job.cmd = cmd;
+            strcpy(job.cmd, cmd);
             // if the command has been launched in background mode,
             // store it in the list of background jobs and continue execution
             // of the shell
