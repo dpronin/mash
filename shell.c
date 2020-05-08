@@ -223,7 +223,7 @@ static void remove_bg_job_node(bg_job_node_t *node)
 
     if (node == g_bg_jobs_lst.tail)
     {
-        g_bg_jobs_lst.tail = g_bg_jobs_lst.tail->prev;
+        g_bg_jobs_lst.tail = node->prev;
         if (g_bg_jobs_lst.tail)
             g_bg_jobs_lst.tail->next = NULL;
     }
