@@ -136,7 +136,7 @@ static void add_job_to_bg(job_t const *job, BGJobStatus_t status)
     {
         // here we need to find where we need to insert a new node
         bg_job_node_t *node = lst->head;
-        for (; node && new_node->job.job.id < node->job.job.id; node = node->next)
+        for (; node && node->job.job.id < new_node->job.job.id; node = node->next)
             ;
 
         // when we need to insert in front of the head
