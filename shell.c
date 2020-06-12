@@ -516,9 +516,17 @@ int main(void)
         // parse a command line received from the shell
         parse(cmdline, argv, &aux);
 
+        int stdout_fd = STDOUT_FILENO;
+        if (aux.out_file)
+        {
+            int const flags = O_CREAT | O_WRONLY | (aux.is_append ? O_APPEND : O_TRUNC);
+            stdout_fd = open(aux.out_file, flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            assert(stdout_fd > 0);
+        }
+
         // if the command is empty skip it, run from the start
         if (!argv[0] || '\0' == argv[0][0])
-            continue;
+            goto end;
 
         // if the path is starting from a letter then check it for being a builtin command
         if (isalpha(argv[0][0]))
@@ -532,7 +540,7 @@ int main(void)
             if (NULL != *builtin)
             {
                 handle_builtin(argv[0], &argv[1]);
-                continue;
+                goto end;
             }
         }
 
@@ -556,21 +564,16 @@ int main(void)
         {
             // before calling a new program we release signals for the new child process
             sigprocmask(SIG_UNBLOCK, &x, NULL);
-
             assert(setpgid(0, 0) == 0);
+
+            if (STDOUT_FILENO != stdout_fd)
+                assert(dup2(stdout_fd, STDOUT_FILENO) >= 0);
+
             if (aux.in_file)
             {
-                int const in_f_fd = open(aux.in_file, O_RDONLY);
-                assert(in_f_fd > 0);
-                assert(dup2(in_f_fd, STDIN_FILENO) >= 0);
-            }
-
-            if (aux.out_file)
-            {
-                int const flags = O_CREAT | O_WRONLY | (aux.is_append ? O_APPEND : O_TRUNC);
-                int const out_f_fd = open(aux.out_file, flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-                assert(out_f_fd > 0);
-                assert(dup2(out_f_fd, STDOUT_FILENO) >= 0);
+                int const stdin_fd = open(aux.in_file, O_RDONLY);
+                assert(stdin_fd > 0);
+                assert(dup2(stdin_fd, STDIN_FILENO) >= 0);
             }
 
             // if the path is relative
@@ -641,6 +644,8 @@ int main(void)
         {
             exit(EXIT_FAILURE);
         }
+end:
+        if (STDOUT_FILENO != stdout_fd) close(stdout_fd);
     }
 }
 /* end main */
