@@ -3,29 +3,29 @@
 #ifndef SHELL_H
 #define SHELL_H
 
-#include<sys/types.h>
-#include<sys/wait.h>
-#include<stdlib.h>
-#include<stdio.h>
-#include<unistd.h>
-#include<string.h>
-#include<sys/stat.h>
-#include<fcntl.h>
-#include<stdbool.h>
-#include<errno.h>
-#include<signal.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "logging.h"
 
 #define MAXLINE 100 /* the max number of chars in one command line */
-#define MAXARGS 50 /* the max number of arguments in one command line */
+#define MAXARGS 50  /* the max number of arguments in one command line */
 
-typedef struct cmd_aux_struct{
-    char *in_file;
-    char *out_file;
-    int is_append;
-    int is_bg;
-}Cmd_aux;
+typedef struct cmd_aux_struct {
+  char *in_file;
+  char *out_file;
+  int is_append;
+  int is_bg;
+} Cmd_aux;
 
 /* The record that keeps additional information about the user command.
  * - in_file: input file name specified by user command (with <);
@@ -40,7 +40,6 @@ typedef struct cmd_aux_struct{
  *           -- 1 : background job
  *           -- 0 : foreground job
  */
-
 
 void parse(char *cmd_line, char *argv[], Cmd_aux *aux);
 /* The required function to parse the user command into useful pieces.
