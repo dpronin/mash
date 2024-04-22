@@ -5,8 +5,9 @@
  * - Optionally the user can specify the initial counter value.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+
 #include <unistd.h>
 
 #define N 10
