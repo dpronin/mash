@@ -1,10 +1,11 @@
 /* Do Not Modify This File */
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
+
 #include <unistd.h>
 
-#include "logging.h"
+#include "logging.hpp"
 
 #define shell_log(s)                                                           \
   printf("\033[1;31m%s%s\n\033[0m", log_head, s);                              \
@@ -178,7 +179,7 @@ void log_job_number(int num_jobs) {
 }
 
 /* Output to detail a single job */
-void log_job_details(int job_id, int pid, char *state, char *cmd) {
+void log_job_details(int job_id, int pid, char const *state, char *cmd) {
   char buffer[255] = {0};
   sprintf(buffer, "Job %d: Process %d: %s %s", job_id, pid, state, cmd);
   shell_log(buffer);

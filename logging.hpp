@@ -1,6 +1,5 @@
 /* Do not modify this file */
-#ifndef LOGGING_H
-#define LOGGING_H
+#pragma once
 
 void log_prompt();
 void log_help();
@@ -24,6 +23,4 @@ void log_job_fg_stopped(int pid, char *cmd);
 void log_job_bg_stopped(int pid, char *cmd);
 void log_file_open_error(char *file_name);
 void log_job_number(int num_jobs);
-void log_job_details(int job_id, int pid, char *state, char *cmd);
-
-#endif /*LOGGING_H*/
+void log_job_details(int job_id, int pid, char const *state, char *cmd);

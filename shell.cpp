@@ -5,11 +5,12 @@
  * GNumber:
  */
 
-#include <assert.h>
-#include <ctype.h>
+#include <cassert>
+#include <cctype>
+#include <cstdio>
 
-#include "logging.h"
-#include "shell.h"
+#include "logging.hpp"
+#include "shell.hpp"
 
 // WORKAROUND: some versions of glibc have stdlib.h and sys/wait.h those
 // contradict and mutually hide WIFCONTINUED and WCONTINUED macroses, but they
@@ -488,8 +489,11 @@ int main(void) {
     }
 
     // if the command is empty skip it, run from the start
-    if (!argv[0] || '\0' == argv[0][0])
-      goto end;
+    if (!argv[0] || '\0' == argv[0][0]) {
+      if (STDOUT_FILENO != stdout_fd)
+        close(stdout_fd);
+      continue;
+    }
 
     // if the path is starting from a letter then check it for being a builtin
     // command
@@ -502,7 +506,9 @@ int main(void) {
       // if the command is builtin, run it
       if (NULL != *builtin) {
         handle_builtin(argv[0], &argv[1]);
-        goto end;
+        if (STDOUT_FILENO != stdout_fd)
+          close(stdout_fd);
+        continue;
       }
     }
 
